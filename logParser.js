@@ -6,13 +6,15 @@ const csvWriter = require('csv-write-stream');
 
 const dbBuffer = fs.readFileSync('GeoLite2-City.mmdb')
 const reader = Reader.openBuffer(dbBuffer);
+let lineNum = 0;
 
 const s = fs.createReadStream('gobankingrates.com.access.log')
   .pipe(es.split())
   .pipe(es.mapSync(function(line){
-
+    
     // pause the readstream
     s.pause();
+    lineNum += 1;
 
     // resolves ip to country/state
     let ipAddress = line.split(' ')[0]
@@ -34,7 +36,7 @@ const s = fs.createReadStream('gobankingrates.com.access.log')
 
     let writer = csvWriter()
 
-      if (!fs.existsSync('out.csv'))
+      if (!fs.existsSync('out.csv') && lineNum === 1)
           writer = csvWriter({ headers: ['IPAddressAndDate', 'HTTPRequest', 'Response', 'URL', 'UserAgent', 'Country', 'State', 'Device', 'Browser']});
       else
         writer = csvWriter({sendHeaders: false});
